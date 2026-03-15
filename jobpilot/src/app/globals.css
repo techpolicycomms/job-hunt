@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+/* ============================================================
+   CSS Custom Properties (Variables) for the dark theme.
+   These are referenced by shadcn/ui components via Tailwind.
+   ============================================================ */
+
+:root {
+  /* Dark theme — slate palette */
+  --background: #020617;        /* slate-950 */
+  --foreground: #f1f5f9;        /* slate-100 */
+  --card: #0f172a;              /* slate-900 */
+  --card-foreground: #f1f5f9;
+  --popover: #0f172a;
+  --popover-foreground: #f1f5f9;
+  --primary: #6366f1;           /* indigo-500 */
+  --primary-foreground: #ffffff;
+  --secondary: #1e293b;         /* slate-800 */
+  --secondary-foreground: #f1f5f9;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;  /* slate-400 */
+  --accent: #1e293b;
+  --accent-foreground: #f1f5f9;
+  --destructive: #ef4444;       /* red-500 */
+  --destructive-foreground: #ffffff;
+  --border: #1e293b;            /* slate-800 */
+  --input: #1e293b;
+  --ring: #6366f1;              /* indigo-500 */
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Base styles */
+* {
+  border-color: var(--border);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Scrollbar styling for dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Loading skeleton animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #1e293b 25%,
+    #334155 50%,
+    #1e293b 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+/* Score color utilities (used in match display) */
+.score-excellent { color: #22c55e; }  /* green-500: 75%+ */
+.score-good      { color: #eab308; }  /* yellow-500: 50-74% */
+.score-fair      { color: #f97316; }  /* orange-500: 30-49% */
+.score-poor      { color: #ef4444; }  /* red-500: below 30% */
