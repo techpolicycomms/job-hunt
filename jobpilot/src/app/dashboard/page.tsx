@@ -1,262 +1,177 @@
-// ============================================================
-// src/app/dashboard/page.tsx
-// Main dashboard with stats, quick URL input, pipeline status.
-// ============================================================
-
 "use client";
 
 export const dynamic = "force-dynamic";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import {
-  Briefcase, CheckCircle2, Clock, TrendingUp, Play, Link as LinkIcon, Loader2,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Link2, Briefcase, Clock, Trophy, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/lib/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import type { Job, PipelineRun } from "@/lib/types";
-
-// ============================================================
-// SCORE COLOR HELPER
-// TS concept: function with typed parameter and return type
-// ============================================================
-
-function getScoreColor(score: number): string {
-  if (score >= 75) return "text-green-400";
-  if (score >= 50) return "text-yellow-400";
-  if (score >= 30) return "text-orange-400";
-  return "text-red-400";
-}
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { toast } = useToast();
   const supabase = createClient();
 
-  // TS concept: useState with explicit types
-  const [stats, setStats] = React.useState({
-    totalJobs: 0,
-    pendingReview: 0,
-    applied: 0,
-    avgScore: 0,
-  });
-  const [recentJobs, setRecentJobs] = React.useState<Job[]>([]);
-  const [lastRun, setLastRun] = React.useState<PipelineRun | null>(null);
+  const [url, setUrl] = React.useState("");
+  const [applications, setApplications] = React.useState<
+    Array<{
+      id: string;
+      status: string;
+      date_applied: string;
+      job: { title: string; company: string; url: string } | null;
+    }>
+  >([]);
   const [loading, setLoading] = React.useState(true);
-  const [pipelineRunning, setPipelineRunning] = React.useState(false);
-  const [urlInput, setUrlInput] = React.useState("");
 
-  // `useEffect` runs after the component mounts on the client
   React.useEffect(() => {
     loadData();
-  }, []); // Empty dependency array = run once on mount
+  }, []);
 
   async function loadData() {
-    setLoading(true);
-    try {
-      // Parallel data fetching with Promise.all
-      const [jobsRes, applicationsRes, runRes] = await Promise.all([
-        supabase
-          .from("jobs")
-          .select("id, title, company, match_score, pipeline_status, discovered_at, source")
-          .order("discovered_at", { ascending: false })
-          .limit(10),
-        supabase
-          .from("applications")
-          .select("id, status")
-          .eq("status", "applied"),
-        supabase
-          .from("pipeline_runs")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single(),
-      ]);
-
-      const jobs = (jobsRes.data ?? []) as Job[];
-      const applications = applicationsRes.data ?? [];
-      const run = runRes.data as PipelineRun | null;
-
-      const pendingReview = jobs.filter(
-        (j) => j.pipeline_status === "ready_for_review"
-      ).length;
-
-      const scores = jobs.filter((j) => j.match_score > 0).map((j) => j.match_score);
-      const avgScore =
-        scores.length > 0
-          ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
-          : 0;
-
-      setStats({
-        totalJobs: jobs.length,
-        pendingReview,
-        applied: applications.length,
-        avgScore,
-      });
-      setRecentJobs(jobs.slice(0, 5));
-      setLastRun(run);
-    } catch (error) {
-      console.error("Failed to load dashboard data:", error);
-    } finally {
-      setLoading(false);
-    }
+    const { data } = await supabase
+      .from("applications")
+      .select("id, status, date_applied, job:jobs(title, company, url)")
+      .order("date_applied", { ascending: false })
+      .limit(10);
+    setApplications((data as unknown as typeof applications) ?? []);
+    setLoading(false);
   }
 
-  async function runPipeline() {
-    setPipelineRunning(true);
-    try {
-      const res = await fetch("/api/pipeline/run", { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
-        toast({
-          title: "Pipeline complete!",
-          description: `Found ${data.run.jobs_discovered} jobs, generated materials for ${data.run.materials_generated}`,
-        });
-        loadData();
-      } else {
-        throw new Error(data.error);
-      }
-    } catch (error) {
-      toast({
-        title: "Pipeline failed",
-        description: error instanceof Error ? error.message : "Unknown error",
-        variant: "destructive",
-      });
-    } finally {
-      setPipelineRunning(false);
-    }
-  }
-
-  async function addUrl(e: React.FormEvent) {
+  function handleSubmitUrl(e: React.FormEvent) {
     e.preventDefault();
-    if (!urlInput.trim()) return;
-    try {
-      const res = await fetch("/api/jobs/parse", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: urlInput }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast({ title: "Job added!", description: "Parsing and matching in progress..." });
-        setUrlInput("");
-        router.push(`/jobs/${data.data.id}`);
-      }
-    } catch {
-      toast({ title: "Failed to add URL", variant: "destructive" });
-    }
+    if (!url.trim()) return;
+    router.push(`/generate?url=${encodeURIComponent(url.trim())}`);
   }
 
-  if (loading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-400" />
-      </div>
-    );
-  }
+  const total = applications.length;
+  const interviews = applications.filter((a) => a.status === "interview").length;
+  const offers = applications.filter((a) => a.status === "offer").length;
+  const rejected = applications.filter((a) => a.status === "rejected").length;
+
+  const statusColors: Record<string, string> = {
+    applied: "bg-blue-500/20 text-blue-400",
+    screening: "bg-yellow-500/20 text-yellow-400",
+    interview: "bg-purple-500/20 text-purple-400",
+    offer: "bg-green-500/20 text-green-400",
+    rejected: "bg-red-500/20 text-red-400",
+    withdrawn: "bg-slate-500/20 text-slate-400",
+    ghosted: "bg-slate-500/20 text-slate-400",
+  };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <p className="text-slate-400 text-sm mt-1">
-            {lastRun
-              ? `Last pipeline: ${format(new Date(lastRun.created_at), "MMM d, h:mm a")}`
-              : "No pipeline runs yet"}
-          </p>
-        </div>
-        <Button onClick={runPipeline} disabled={pipelineRunning}>
-          {pipelineRunning ? (
-            <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Running...</>
-          ) : (
-            <><Play className="h-4 w-4 mr-2" />Run Pipeline</>
-          )}
-        </Button>
-      </div>
-
-      {/* Stats cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: "Total Jobs", value: stats.totalJobs, icon: Briefcase, color: "text-indigo-400" },
-          { label: "Pending Review", value: stats.pendingReview, icon: Clock, color: "text-yellow-400" },
-          { label: "Applied", value: stats.applied, icon: CheckCircle2, color: "text-green-400" },
-          { label: "Avg Score", value: `${stats.avgScore}%`, icon: TrendingUp, color: getScoreColor(stats.avgScore) },
-        ].map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-slate-400">{stat.label}</p>
-                  <p className={`text-2xl font-bold mt-1 ${stat.color}`}>{stat.value}</p>
-                </div>
-                <stat.icon className={`h-8 w-8 ${stat.color} opacity-70`} />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Quick URL input */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <LinkIcon className="h-4 w-4 text-indigo-400" />
-            Add Job URL
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={addUrl} className="flex gap-2">
-            <Input
-              placeholder="https://linkedin.com/jobs/view/..."
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              className="flex-1"
+    <div className="p-6 max-w-4xl mx-auto space-y-8">
+      {/* Hero: URL Input */}
+      <div className="text-center space-y-4 py-8">
+        <h1 className="text-3xl font-bold text-white">JobPilot</h1>
+        <p className="text-slate-400 text-lg">
+          Paste a job URL to generate ATS-optimized CV and cover letter
+        </p>
+        <form onSubmit={handleSubmitUrl} className="flex gap-2 max-w-2xl mx-auto">
+          <div className="relative flex-1">
+            <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+            <input
+              type="text"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://linkedin.com/jobs/view/... or any job URL"
+              className="w-full pl-10 pr-4 py-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
-            <Button type="submit">Parse & Match</Button>
-          </form>
-        </CardContent>
-      </Card>
+          </div>
+          <Button type="submit" size="lg" disabled={!url.trim()}>
+            Generate
+          </Button>
+        </form>
+        <button
+          onClick={() => router.push("/generate")}
+          className="text-sm text-slate-500 hover:text-slate-300 underline"
+        >
+          Or paste job description text directly
+        </button>
+      </div>
 
-      {/* Recent jobs */}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <Briefcase className="h-8 w-8 text-blue-400" />
+            <div>
+              <p className="text-2xl font-bold text-white">{total}</p>
+              <p className="text-xs text-slate-400">Total Applied</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <Clock className="h-8 w-8 text-purple-400" />
+            <div>
+              <p className="text-2xl font-bold text-white">{interviews}</p>
+              <p className="text-xs text-slate-400">Interviews</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <Trophy className="h-8 w-8 text-green-400" />
+            <div>
+              <p className="text-2xl font-bold text-white">{offers}</p>
+              <p className="text-xs text-slate-400">Offers</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <XCircle className="h-8 w-8 text-red-400" />
+            <div>
+              <p className="text-2xl font-bold text-white">{rejected}</p>
+              <p className="text-xs text-slate-400">Rejected</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Applications */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Recent Jobs</CardTitle>
+          <CardTitle className="text-lg">Recent Applications</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            {recentJobs.length === 0 ? (
-              <p className="text-slate-400 text-sm text-center py-4">
-                No jobs yet. Run the pipeline or add a URL above.
-              </p>
-            ) : (
-              recentJobs.map((job) => (
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-indigo-400" />
+            </div>
+          ) : applications.length === 0 ? (
+            <p className="text-slate-400 text-center py-8">
+              No applications yet. Paste a job URL above to get started.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {applications.map((app) => (
                 <div
-                  key={job.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 cursor-pointer transition-colors"
-                  onClick={() => router.push(`/jobs/${job.id}`)}
+                  key={app.id}
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-800/50 transition-colors cursor-pointer"
+                  onClick={() => router.push("/applications")}
                 >
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-white text-sm truncate">{job.title}</p>
-                    <p className="text-xs text-slate-400">{job.company}</p>
+                  <div>
+                    <p className="text-sm font-medium text-white">
+                      {app.job?.title ?? "Unknown"}
+                    </p>
+                    <p className="text-xs text-slate-400">{app.job?.company ?? ""}</p>
                   </div>
-                  <div className="flex items-center gap-2 ml-3">
-                    <span className={`text-sm font-bold ${getScoreColor(job.match_score)}`}>
-                      {job.match_score}%
-                    </span>
-                    <Badge variant="secondary" className="text-xs capitalize">
-                      {job.pipeline_status.replace(/_/g, " ")}
+                  <div className="flex items-center gap-3">
+                    <Badge className={statusColors[app.status] ?? ""}>
+                      {app.status}
                     </Badge>
+                    <span className="text-xs text-slate-500">
+                      {format(new Date(app.date_applied), "MMM d")}
+                    </span>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

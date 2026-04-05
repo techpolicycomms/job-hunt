@@ -20,9 +20,9 @@ export const dynamic = "force-dynamic";
 
 // `Metadata` type from Next.js — defines <title>, <description>, etc.
 export const metadata: Metadata = {
-  title: "JobPilot — Automated Job Applications",
+  title: "JobPilot — ATS-Optimized Job Applications",
   description:
-    "AI-powered job discovery and application system with modular CV lens matching",
+    "Paste a job URL, get a tailored CV and cover letter with ATS-friendly keywords",
 };
 
 /**
