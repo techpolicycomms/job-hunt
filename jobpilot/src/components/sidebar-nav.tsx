@@ -1,9 +1,3 @@
-// ============================================================
-// src/components/sidebar-nav.tsx
-// Dark sidebar navigation with links to all main pages.
-// Includes mobile hamburger menu support via Sheet component.
-// ============================================================
-
 "use client";
 
 import * as React from "react";
@@ -11,12 +5,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
-  GitMerge,
-  Briefcase,
+  FileText,
   KanbanSquare,
   User,
-  BarChart3,
-  Settings,
   LogOut,
   Menu,
   Rocket,
@@ -27,42 +18,20 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
-// ============================================================
-// NAV ITEMS CONFIGURATION
-// TS concept: Array of objects with a specific shape.
-// Using `as const` would make it readonly — here we keep it mutable.
-// ============================================================
-
 interface NavItem {
   label: string;
   href: string;
-  // `React.ComponentType` is a generic type for any React component
-  // that accepts SVG props (like lucide-react icons)
   icon: React.ComponentType<{ className?: string }>;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Pipeline", href: "/pipeline", icon: GitMerge },
-  { label: "Jobs", href: "/jobs", icon: Briefcase },
-  { label: "Tracker", href: "/tracker", icon: KanbanSquare },
+  { label: "Generate", href: "/generate", icon: FileText },
+  { label: "Applications", href: "/applications", icon: KanbanSquare },
   { label: "Profile", href: "/profile", icon: User },
-  { label: "Analytics", href: "/analytics", icon: BarChart3 },
-  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-// ============================================================
-// NAV LINK COMPONENT
-// ============================================================
-
-interface NavLinkProps {
-  item: NavItem;
-  // Optional callback for closing the mobile sheet after navigation
-  onNavigate?: () => void;
-}
-
-function NavLink({ item, onNavigate }: NavLinkProps) {
-  // `usePathname()` returns the current URL path (e.g. "/pipeline")
+function NavLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
   const pathname = usePathname();
   const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
   const Icon = item.icon;
@@ -84,29 +53,18 @@ function NavLink({ item, onNavigate }: NavLinkProps) {
   );
 }
 
-// ============================================================
-// SIDEBAR CONTENT (shared between desktop and mobile)
-// ============================================================
-
-interface SidebarContentProps {
-  onNavigate?: () => void;
-}
-
-function SidebarContent({ onNavigate }: SidebarContentProps) {
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const router = useRouter();
   const supabase = createClient();
 
-  // TS concept: `async` event handler — the function is async
-  // so we can use `await` inside it
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/login");
-    router.refresh(); // Clear Next.js router cache
+    router.refresh();
   };
 
   return (
     <div className="flex h-full flex-col">
-      {/* Logo / App name */}
       <div className="flex items-center gap-2 px-4 py-6">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
           <Rocket className="h-4 w-4 text-white" />
@@ -114,14 +72,12 @@ function SidebarContent({ onNavigate }: SidebarContentProps) {
         <span className="text-lg font-bold text-white">JobPilot</span>
       </div>
 
-      {/* Navigation links */}
       <nav className="flex-1 space-y-1 px-3">
         {NAV_ITEMS.map((item) => (
           <NavLink key={item.href} item={item} onNavigate={onNavigate} />
         ))}
       </nav>
 
-      {/* User section at bottom */}
       <div className="border-t border-slate-800 p-3">
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
           <Avatar className="h-8 w-8">
@@ -146,23 +102,15 @@ function SidebarContent({ onNavigate }: SidebarContentProps) {
   );
 }
 
-// ============================================================
-// MAIN SIDEBAR COMPONENT
-// ============================================================
-
 export function SidebarNav() {
-  // TS concept: `useState<boolean>` — state with explicit type parameter.
-  // Without the generic, TypeScript infers the type from the initial value.
-  const [mobileOpen, setMobileOpen] = React.useState<boolean>(false);
+  const [mobileOpen, setMobileOpen] = React.useState(false);
 
   return (
     <>
-      {/* Desktop sidebar — hidden on mobile */}
       <aside className="hidden md:flex w-56 flex-col border-r border-slate-800 bg-slate-900">
         <SidebarContent />
       </aside>
 
-      {/* Mobile: hamburger button + slide-out sheet */}
       <div className="md:hidden">
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>

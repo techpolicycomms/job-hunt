@@ -1,33 +1,16 @@
-// ============================================================
-// src/app/api/seed/route.ts
-// POST /api/seed — Seeds Rahul's full profile and 17 lenses.
-//
-// Run once after creating your account:
-//   curl -X POST http://localhost:3000/api/seed
-// Or use the browser: POST from any client.
-// ============================================================
-
+// POST /api/seed — Seeds Rahul's full profile and 17 role lenses.
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-/**
- * POST /api/seed
- * Seeds the database with Rahul Jha's full profile and 17 role lenses.
- */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const supabase = await createClient();
-
-    // Auth check
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ success: false, error: "Sign in first" }, { status: 401 });
     }
 
-    // ============================================================
     // STEP 1: Create/update profile
-    // ============================================================
-
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .upsert(
@@ -94,11 +77,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const profileId = profile.id;
 
-    // ============================================================
     // STEP 2: Create 17 role lenses
-    // ============================================================
-
-    // TS concept: defining a large array of objects with a consistent shape
     const lenses = [
       // ---- ITU 2021-Present (5 lenses) ----
       {
@@ -416,48 +395,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Delete existing lenses and re-insert (clean seed)
     await supabase.from("role_lenses").delete().eq("profile_id", profileId);
-
     const { error: lensError } = await supabase.from("role_lenses").insert(lenses);
     if (lensError) throw new Error(`Lenses error: ${lensError.message}`);
-
-    // ============================================================
-    // STEP 3: Create/update search preferences
-    // ============================================================
-
-    await supabase
-      .from("search_preferences")
-      .upsert(
-        {
-          user_id: user.id,
-          keywords: [
-            "programme manager",
-            "digital transformation",
-            "AI governance",
-            "partnerships",
-            "innovation",
-            "sustainability",
-            "project management",
-            "cybersecurity policy",
-            "vendor operations",
-            "resource mobilization",
-          ],
-          locations: ["Geneva", "Zurich", "Dublin", "Remote"],
-          job_types: ["Full-time", "Contract"],
-          min_match_score: 75,
-          max_daily_jobs: 20,
-          excluded_companies: [],
-          excluded_keywords: [],
-          platforms: {
-            linkedin: true,
-            google_careers: true,
-            indeed: true,
-            unjobs: true,
-            web: true,
-          },
-          is_active: true,
-        },
-        { onConflict: "user_id" }
-      );
 
     return NextResponse.json({
       success: true,
