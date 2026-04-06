@@ -1,0 +1,109 @@
+# Career-Ops Profile — Rahul Jha
+# Single source of truth for all job search modes.
+# This file is gitignored — your personal data stays local only.
+
+candidate:
+  full_name: "Rahul Jha"
+  email: "rjha1909@gmail.com"
+  phone: "+41 78818 6778"
+  location: "Geneva, Switzerland"
+  linkedin: "linkedin.com/in/r-jha"
+  portfolio_url: ""
+  github: ""
+  twitter: ""
+
+target_roles:
+  # North Star roles — optimising for programme/innovation/AI governance
+  primary:
+    - "Programme Manager"
+    - "Innovation Manager"
+    - "Digital Transformation Lead"
+    - "AI Governance Specialist"
+    - "Partnerships Manager"
+  archetypes:
+    - name: "Programme / Project Manager"
+      level: "Senior/Lead"
+      fit: "primary"        # 11 years managing complex multi-stakeholder programmes
+    - name: "Innovation & Digital Transformation"
+      level: "Senior/Lead"
+      fit: "primary"        # Led Innovation Centre, AI integration, product modernisation
+    - name: "Strategic Partnerships / Resource Mobilization"
+      level: "Senior"
+      fit: "primary"        # CHF 1.2M/year raised, donor-to-partner conversion
+    - name: "AI Governance / Policy Analyst"
+      level: "Senior"
+      fit: "primary"        # Routledge Handbook, ISC2, MSME Cyber Index
+    - name: "Sustainability Programme Officer"
+      level: "Senior"
+      fit: "secondary"      # EMS focal point, ISO 14001, Green Digital Action
+    - name: "Vendor Operations / Procurement"
+      level: "Senior"
+      fit: "secondary"      # CHF 500K–1M vendor budgets, 5-15 providers per event
+    - name: "Cybersecurity Policy / Data Governance"
+      level: "Mid-Senior"
+      fit: "secondary"      # ISC2 cert, cyber-readiness index, WTO collaboration
+    - name: "Business Development / Sales"
+      level: "Senior"
+      fit: "adjacent"       # B2B partnerships, sponsorship, revenue generation
+
+narrative:
+  headline: "UN Programme Manager × AI integration lead — 11 years scaling digital innovation across ITU, international orgs, and telecom"
+  exit_story: "Built career at ITU from resource mobilization (2014) through SME platform scaling (2016–2019) to leading AI integration and Innovation Centre (2021–present), all while completing a PhD at University of Geneva. Now seeking a role where AI governance, sustainability, and strategic partnerships converge."
+  superpowers:
+    - "Scaled ITU SME Programme from 0 → 9,000 members in 180+ countries in 3 years"
+    - "Led Google Gemini AI integration evaluation and ITU adoption roadmap"
+    - "Raises CHF 1.2M/year through B2B partnerships — 55% donor retention increase"
+    - "Builds cross-UN coalitions: ILO, UNCTAD, ITC, WTO joint programmes"
+    - "Co-designed ISO 14001 EMS framework for a UN agency"
+    - "Vendor ops for ministerial events (500–2,000 attendees, CHF 500K–1M budgets)"
+  proof_points:
+    - name: "MSME Cyber-Readiness Index"
+      url: ""
+      hero_metric: "Global index co-developed with WTO, forthcoming publication"
+    - name: "Routledge Handbook of AI and Philanthropy"
+      url: ""
+      hero_metric: "Chapter published 2024"
+    - name: "ITU SME Platform"
+      url: ""
+      hero_metric: "0 → 9,000 members, 180+ countries"
+    - name: "Green Digital Action Summit (GITEX Europe)"
+      url: ""
+      hero_metric: "Co-designed and delivered; linked EMS to Green Digital Action"
+
+compensation:
+  target_range: "CHF 100,000–130,000"
+  currency: "CHF"
+  minimum: "CHF 90,000"
+  location_flexibility: "Geneva-based preferred; open to Zurich, Dublin, or fully remote"
+
+location:
+  country: "Switzerland"
+  city: "Geneva"
+  timezone: "CET"
+  visa_status: "Swiss Permis B — authorised to work in Switzerland; EU/EEA eligible"
+  onsite_availability: "On-site in Geneva full-time or hybrid; monthly travel possible"
+
+languages:
+  - { language: "English", level: "Native" }
+  - { language: "French", level: "B2 — professional working proficiency" }
+  - { language: "Hindi", level: "Native" }
+  - { language: "Maithili", level: "Native" }
+
+education:
+  - degree: "PhD candidate, Management"
+    institution: "University of Geneva"
+    period: "2021–present"
+  - degree: "MBA"
+    institution: "IMT Ghaziabad (with HHL Leipzig exchange)"
+    period: "2012–2014"
+  - degree: "BE, Telecommunications"
+    institution: "University of Pune"
+    period: "2005–2009"
+
+certifications:
+  - "CAPM — PMI (2025)"
+  - "Certified in Cybersecurity — ISC2 (2024)"
+  - "Governance of AI — UNSSC (2024)"
+  - "AI & Machine Learning — Aptech (2020–21)"
+  - "Digital Product Management — Nuclio (2021)"
+  - "Power BI — Microsoft (2020)"
